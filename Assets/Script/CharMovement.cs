@@ -9,6 +9,7 @@ public class CharMovement : MonoBehaviour
     private float movement;
 
     private SpriteRenderer spriteRenderer;
+    private PlayerAnim playerAnimator;
 
     private bool isGrounded;
 
@@ -26,7 +27,11 @@ public class CharMovement : MonoBehaviour
 
         if (movement != 0)
         {
+            PlayerEvent.OnRun?.Invoke();
             spriteRenderer.flipX = movement < 0;
+        }else if (isGrounded)
+        {
+            PlayerEvent.OnIdle?.Invoke();
         }
     }
 
@@ -40,6 +45,7 @@ public class CharMovement : MonoBehaviour
         if (collision.gameObject.CompareTag("Ground"))
         {
             isGrounded = true;
+            PlayerEvent.OnIdle?.Invoke();
         }
     }
 
