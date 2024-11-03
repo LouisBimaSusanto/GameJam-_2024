@@ -2,80 +2,114 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class QTEManager : MonoBehaviour
 {
-    public GameObject qtePanel;
-    public Image needle;
-    public float qteDuration = 2f;
-    public float needleSpeed = 200f;
-    public float hitAreaSize = 30f;
+    public Transform pointA;
+    public Transform pointB; 
+    public Transform safeZone; 
+    public float moveSpeed = 100f; 
+    public GameObject qtePanel; // QTE UI Panel to show/hide
+    public Transform pointer; 
 
+    private Vector3 targetPosition;
+    private EnemyHealth enemyHealth; 
     private bool qteActive = false;
-    private float targetAngle;
-    private float currentAngle;
-    private bool success = false;
-    private EnemyHealth enemyHealth;
 
-    // Start is called before the first frame update
     void Start()
     {
+        if (pointer == null)
+        {
+            Debug.LogError("Pointer not assigned. Please assign a pointer GameObject in the Inspector.");
+            return;
+        }
+
+        targetPosition = pointB.position; 
+        pointer.position = pointA.position;
+        qtePanel.SetActive(false); // Hide QTE panel initially
+    }
+
+    public void StartQTE(EnemyHealth targetEnemy)
+    {
+        enemyHealth = targetEnemy; // Set enemy for QTE
+        qteActive = true;
+        qtePanel.SetActive(true); // Show QTE panel
+        pointer.position = pointA.position;
+        targetPosition = pointB.position; 
+    }
+
+    void Update()
+    {
+        if (!qteActive || pointer == null) return;
+
+        pointer.position = Vector3.MoveTowards(pointer.position, targetPosition, moveSpeed * Time.deltaTime);
+
+        if (Vector3.Distance(pointer.position, pointA.position) < 0.1f)
+        {
+            targetPosition = pointB.position;
+        }
+        else if (Vector3.Distance(pointer.position, pointB.position) < 0.1f)
+        {
+            targetPosition = pointA.position;
+        }
+
+        // Spacebar press to check success
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            CheckSuccess();
+        }
+    }
+
+    void CheckSuccess()
+    {
+        // Ensure the pointer and safe zone are both RectTransforms for accurate UI checking
+        RectTransform pointerRect = pointer.GetComponent<RectTransform>();
+        RectTransform safeZoneRect = safeZone.GetComponent<RectTransform>();
+
+        if (pointerRect != null && safeZoneRect != null)
+        {
+            if (RectTransformUtility.RectangleContainsScreenPoint(safeZoneRect, pointerRect.position, null))
+            {
+                Debug.Log("Success!");
+                ExecuteQTE();
+            }
+            else
+            {
+                Debug.Log("Fail!");
+                GameOver();
+            }
+        }
+        else
+        {
+            if (Vector3.Distance(pointer.position, safeZone.position) < 0.5f) 
+            {
+                Debug.Log("Success!");
+                ExecuteQTE();
+            }
+            else
+            {
+                Debug.Log("Fail!");
+                GameOver();
+            }
+        }
+
+        qteActive = false;
         qtePanel.SetActive(false);
     }
 
-    public void StartQTE(EnemyHealth enemyHealthToDamage)
+    void ExecuteQTE()
     {
-        enemyHealth = enemyHealthToDamage;
-        success = false;
-        currentAngle = 0f;
-        targetAngle = Random.Range(0f, 360f);
-        qtePanel.SetActive(true);
-        StartCoroutine(QTECoroutine());
-    }
-
-    private IEnumerator QTECoroutine()
-    {
-        float timer = 0f;
-
-        while (timer < qteDuration)
-        {
-            if (!success)
-            {
-                currentAngle += needleSpeed * Time.deltaTime;
-                needle.transform.rotation = Quaternion.Euler(0f, 0f, currentAngle);
-
-                float angleDifference = Mathf.Abs((currentAngle % 360) - targetAngle);
-                if (angleDifference < hitAreaSize)
-                {
-                    if (Input.GetKeyDown(KeyCode.Space))
-                    {
-                        success = true;
-                        qtePanel.SetActive(false) ;
-                        ExecuteQTE();
-                    }
-                }
-            }
-            timer += Time.deltaTime;
-            yield return null;
-        }
-
-        if (!success)
-        {
-            GameOver();
-        }
-    }
-
-    private void ExecuteQTE()
-    {
-        if (enemyHealth !=null)
+        if (enemyHealth != null)
         {
             enemyHealth.TakeDamage(100);
-            Debug.Log("QTE don");
+            Debug.Log("Enemy damaged!");
         }
     }
 
-    private void GameOver() 
+    void GameOver()
     {
-        Debug.Log("Cupu");
+        Debug.Log("Game Over! Failed QTE.");
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }
