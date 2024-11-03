@@ -12,6 +12,11 @@ public class EnemyPatrol : MonoBehaviour
     public float speed;
     private bool isWaiting = false;
 
+    // Variabel untuk mengejar player
+    public Transform player;
+    public float chaseRange;
+    private bool isChasing = false;
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -21,6 +26,33 @@ public class EnemyPatrol : MonoBehaviour
     }
 
     void Update()
+    {
+        float distanceToPlayer = Vector2.Distance(transform.position, player.position);
+
+        // Tentukan apakah enemy harus mengejar player
+        if (distanceToPlayer < chaseRange)
+        {
+            isChasing = true;
+        }
+        else if (distanceToPlayer > chaseRange * 1.5f) // Berhenti mengejar jika player cukup jauh
+        {
+            isChasing = false;
+        }
+
+        if (isChasing)
+        {
+            // Logika pengejaran player
+            Vector2 direction = (player.position - transform.position).normalized;
+            rb.velocity = new Vector2(direction.x * speed, rb.velocity.y);
+            anim.SetBool("isRunning", true);
+        }
+        else
+        {
+            Patrol();
+        }
+    }
+
+    private void Patrol()
     {
         if (!isWaiting)
         {
@@ -41,15 +73,13 @@ public class EnemyPatrol : MonoBehaviour
     private IEnumerator WaitAtPoint()
     {
         isWaiting = true;
-        rb.velocity = Vector2.zero; // Pastikan enemy berhenti
-        anim.SetBool("isRunning", false); // Berhenti animasi berjalan jika diinginkan
+        rb.velocity = Vector2.zero;
+        anim.SetBool("isRunning", false);
 
-        yield return new WaitForSeconds(2f); // Tunggu 2 detik
+        yield return new WaitForSeconds(2f);
 
-        // Panggil flip() sebelum mengganti titik tujuan
         flip();
-
-        anim.SetBool("isRunning", true); // Mulai kembali animasi berjalan
+        anim.SetBool("isRunning", true);
         currentPoint = currentPoint == PointB.transform ? PointA.transform : PointB.transform;
         isWaiting = false;
     }
@@ -69,5 +99,9 @@ public class EnemyPatrol : MonoBehaviour
             Gizmos.DrawWireSphere(PointB.transform.position, 0.5f);
             Gizmos.DrawLine(PointA.transform.position, PointB.transform.position);
         }
+
+        // Gizmo untuk melihat chase range
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, chaseRange);
     }
 }
