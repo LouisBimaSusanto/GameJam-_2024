@@ -6,29 +6,29 @@ using UnityEngine.UI;
 public class QTEManager : MonoBehaviour
 {
     public GameObject qtePanel;
-    public Image needle;
+    public RectTransform needle;
+    public RectTransform hitArea;
     public float qteDuration = 2f;
     public float needleSpeed = 200f;
-    public float hitAreaSize = 30f;
 
     private bool qteActive = false;
-    private float targetAngle;
-    private float currentAngle;
     private bool success = false;
+    private float originalNeedleX;
     private EnemyHealth enemyHealth;
 
     // Start is called before the first frame update
     void Start()
     {
         qtePanel.SetActive(false);
+        originalNeedleX = needle.anchoredPosition.x;
     }
 
     public void StartQTE(EnemyHealth enemyHealthToDamage)
     {
         enemyHealth = enemyHealthToDamage;
         success = false;
-        currentAngle = 0f;
-        targetAngle = Random.Range(0f, 360f);
+        qteActive = true;
+        needle.anchoredPosition = new Vector2(originalNeedleX, needle.anchoredPosition.y); // Reset posisi jarum
         qtePanel.SetActive(true);
         StartCoroutine(QTECoroutine());
     }
@@ -39,19 +39,26 @@ public class QTEManager : MonoBehaviour
 
         while (timer < qteDuration)
         {
-            if (!success)
+            if (!success && qteActive)
             {
-                currentAngle += needleSpeed * Time.deltaTime;
-                needle.transform.rotation = Quaternion.Euler(0f, 0f, currentAngle);
+                needle.anchoredPosition += Vector2.right * needleSpeed * Time.deltaTime;
 
-                float angleDifference = Mathf.Abs((currentAngle % 360) - targetAngle);
-                if (angleDifference < hitAreaSize)
+                if (needle.anchoredPosition.x > qtePanel.GetComponent<RectTransform>().rect.width)
                 {
-                    if (Input.GetKeyDown(KeyCode.Space))
+                    needle.anchoredPosition = new Vector2(originalNeedleX, needle.anchoredPosition.y);
+                }
+
+                if (Input.GetKeyDown(KeyCode.Space))
+                {
+                    if (IsNeedleInHitArea())
                     {
                         success = true;
-                        qtePanel.SetActive(false) ;
-                        ExecuteQTE();
+                        qtePanel.SetActive(false); // Nonaktifkan QTE UI
+                        ExecuteQTE(); // Eksekusi QTE
+                    }
+                    else
+                    {
+                        GameOver(); // Jika gagal
                     }
                 }
             }
@@ -63,6 +70,15 @@ public class QTEManager : MonoBehaviour
         {
             GameOver();
         }
+    }
+
+    private bool IsNeedleInHitArea()
+    {
+        float needleX = needle.anchoredPosition.x;
+        float hitAreaMinX = hitArea.anchoredPosition.x - (hitArea.rect.width / 2);
+        float hitAreaMaxX = hitArea.anchoredPosition.x + (hitArea.rect.width / 2);
+
+        return needleX >= hitAreaMinX && needleX <= hitAreaMaxX;
     }
 
     private void ExecuteQTE()
