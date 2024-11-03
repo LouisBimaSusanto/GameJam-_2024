@@ -141,9 +141,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PointA: {fileID: 1146707103}
   PointB: {fileID: 1024442425}
-  speed: 2
-  player: {fileID: 0}
-  chaseRange: 0
+  speed: 3
 --- !u!50 &340176913
 Rigidbody2D:
   serializedVersion: 4
@@ -216,30 +214,6 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
---- !u!95 &340176915 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 178117344329758845, guid: 7ca35af1d32e5a74594e038f1a0fecad, type: 3}
-  m_PrefabInstance: {fileID: 1049511075}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &340176918
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 340176911}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a1be661a7fdb250489e7333238868967, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  weapon: {fileID: 0}
-  animator: {fileID: 340176915}
-  attackRange: 5
-  playerLayer:
-    serializedVersion: 2
-    m_Bits: 8
-  damageAmount: 100
 --- !u!1 &791591850
 GameObject:
   m_ObjectHideFlags: 0
@@ -614,9 +588,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3705900428966069525, guid: 7ca35af1d32e5a74594e038f1a0fecad, type: 3}
       insertIndex: -1
       addedObject: {fileID: 340176912}
-    - targetCorrespondingSourceObject: {fileID: 3705900428966069525, guid: 7ca35af1d32e5a74594e038f1a0fecad, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 340176918}
   m_SourcePrefab: {fileID: 100100000, guid: 7ca35af1d32e5a74594e038f1a0fecad, type: 3}
 --- !u!1 &1146707103
 GameObject:
