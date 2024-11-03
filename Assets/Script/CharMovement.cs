@@ -9,8 +9,8 @@ public class CharMovement : MonoBehaviour
     private float movement;
 
     private SpriteRenderer spriteRenderer;
-    private PlayerAnim playerAnimator;
-
+    private SpriteRenderer childSpriteRenderer; // Referensi ke SpriteRenderer pada child object
+    private Animator animator;
     private bool isGrounded;
 
     // Start is called before the first frame update
@@ -18,6 +18,8 @@ public class CharMovement : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+        childSpriteRenderer = transform.Find("Sabit").GetComponent<SpriteRenderer>();
+        animator = GetComponent<Animator>();
     }
 
     // Update is called once per frame
@@ -27,11 +29,13 @@ public class CharMovement : MonoBehaviour
 
         if (movement != 0)
         {
-            PlayerEvent.OnRun?.Invoke();
             spriteRenderer.flipX = movement < 0;
-        }else if (isGrounded)
+            childSpriteRenderer.flipX = movement < 0;
+            animator.SetBool("isRunning", true);
+        }
+        else if (isGrounded)
         {
-            PlayerEvent.OnIdle?.Invoke();
+            animator.SetBool("isRunning", false);
         }
     }
 
@@ -45,7 +49,6 @@ public class CharMovement : MonoBehaviour
         if (collision.gameObject.CompareTag("Ground"))
         {
             isGrounded = true;
-            PlayerEvent.OnIdle?.Invoke();
         }
     }
 
