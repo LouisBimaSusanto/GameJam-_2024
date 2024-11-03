@@ -947,11 +947,11 @@ GameObject:
   - component: {fileID: 1835992476}
   - component: {fileID: 1835992480}
   - component: {fileID: 1835992481}
-  - component: {fileID: 1835992479}
-  - component: {fileID: 1835992483}
-  - component: {fileID: 1835992484}
   - component: {fileID: 1835992482}
   - component: {fileID: 1835992485}
+  - component: {fileID: 1835992488}
+  - component: {fileID: 1835992487}
+  - component: {fileID: 1835992486}
   m_Layer: 0
   m_Name: Char
   m_TagString: Player
@@ -1027,19 +1027,6 @@ Transform:
   - {fileID: 6359065811485685310}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0.8, y: 0, z: 0}
---- !u!114 &1835992479
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1835992475}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 319272727bc916744b9b9271c1ec34a4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  moveSpeed: 5
 --- !u!50 &1835992480
 Rigidbody2D:
   serializedVersion: 4
@@ -1123,33 +1110,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &1835992483
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1835992475}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 112d489cf5fec804688b3b7e8ba7000d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &1835992484
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1835992475}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4fb3ae8fc29e6b1468793158c578070f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  dashPower: 5
-  dashDuration: 0.5
-  dashCooldown: 1
 --- !u!96 &1835992485
 TrailRenderer:
   serializedVersion: 3
@@ -1263,6 +1223,46 @@ TrailRenderer:
   m_Autodestruct: 0
   m_Emitting: 0
   m_ApplyActiveColorSpace: 1
+--- !u!114 &1835992486
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1835992475}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 112d489cf5fec804688b3b7e8ba7000d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1835992487
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1835992475}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 319272727bc916744b9b9271c1ec34a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveSpeed: 5
+--- !u!114 &1835992488
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1835992475}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4fb3ae8fc29e6b1468793158c578070f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dashPower: 15
+  dashDuration: 0.2
+  dashCooldown: 1
 --- !u!1 &487927479593486522
 GameObject:
   m_ObjectHideFlags: 0
