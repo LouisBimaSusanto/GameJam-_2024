@@ -9,6 +9,9 @@ EditorBuildSettings:
     path: Assets/Scenes/R_UIMenu.unity
     guid: c30ea86af752a0f41af36e9942768ab0
   - enabled: 1
+    path: Assets/Scenes/R_EnemyFix.unity
+    guid: 9352d44e67599e54f8bfca20af46237f
+  - enabled: 1
     path: Assets/Scenes/L_Fitur.unity
     guid: 8c9cfa26abfee488c85f1582747f6a02
   m_configObjects: {}
