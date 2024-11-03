@@ -4,24 +4,22 @@ using UnityEngine;
 
 public class EnemyPatrol : MonoBehaviour
 {
-    public GameObject PointA;
-    public GameObject PointB;
+    public Transform[] patrolPoints; // Array untuk point yang bisa dibagikan
+    private int currentPointIndex = 0; // Index untuk point saat ini
     private Rigidbody2D rb;
     private Animator anim;
-    private Transform currentPoint;
     public float speed;
+    public float chaseSpeed;
     private bool isWaiting = false;
 
-    // Variabel untuk mengejar player
-    public Transform player;
-    public float chaseRange;
-    private bool isChasing = false;
+    public Transform player; // Referensi untuk player
+    public float chaseRange; // Jarak deteksi untuk mengejar
+    private bool isChasing = false; // Status apakah enemy sedang mengejar
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
-        currentPoint = PointB.transform;
         anim.SetBool("isRunning", true);
     }
 
@@ -29,45 +27,70 @@ public class EnemyPatrol : MonoBehaviour
     {
         float distanceToPlayer = Vector2.Distance(transform.position, player.position);
 
-        // Tentukan apakah enemy harus mengejar player
-        if (distanceToPlayer < chaseRange)
+        // Cek jika player berada di dalam range chase dan di arah yang sesuai
+        if (distanceToPlayer < chaseRange && IsPlayerInCorrectDirection())
         {
             isChasing = true;
         }
-        else if (distanceToPlayer > chaseRange * 1.5f) // Berhenti mengejar jika player cukup jauh
+        else if (isChasing && (distanceToPlayer >= chaseRange + 2f || !IsPlayerInCorrectDirection()))
         {
             isChasing = false;
         }
 
         if (isChasing)
         {
-            // Logika pengejaran player
-            Vector2 direction = (player.position - transform.position).normalized;
-            rb.velocity = new Vector2(direction.x * speed, rb.velocity.y);
-            anim.SetBool("isRunning", true);
+            ChasePlayer();
         }
-        else
+        else if (!isWaiting)
         {
             Patrol();
         }
     }
 
-    private void Patrol()
+    void Patrol()
     {
-        if (!isWaiting)
+        // Tentukan arah ke target patrol dan cek apakah perlu flip
+        Transform targetPoint = patrolPoints[currentPointIndex];
+        if ((targetPoint.position.x < transform.position.x && transform.localScale.x > 0) ||
+            (targetPoint.position.x > transform.position.x && transform.localScale.x < 0))
         {
-            Vector2 direction = (currentPoint.position - transform.position).normalized;
-            rb.velocity = new Vector2(direction.x * speed, rb.velocity.y);
+            flip();
+        }
 
-            if (Vector2.Distance(transform.position, currentPoint.position) < 0.5f)
-            {
-                StartCoroutine(WaitAtPoint());
-            }
-        }
-        else
+        Vector2 direction = (targetPoint.position - transform.position).normalized;
+        rb.velocity = new Vector2(direction.x * speed, rb.velocity.y);
+
+        anim.SetBool("isRunning", rb.velocity.magnitude > 0.1f);
+
+        if (Vector2.Distance(transform.position, targetPoint.position) < 0.5f)
         {
-            rb.velocity = Vector2.zero; // Enemy berhenti saat menunggu
+            StartCoroutine(WaitAtPoint());
         }
+    }
+
+    void ChasePlayer()
+    {
+        Vector2 direction = (player.position - transform.position).normalized;
+        rb.velocity = new Vector2(direction.x * chaseSpeed, rb.velocity.y);
+
+        anim.SetBool("isRunning", true);
+
+        // Mengatur arah enemy mengikuti player
+        if ((player.position.x < transform.position.x && transform.localScale.x > 0) ||
+            (player.position.x > transform.position.x && transform.localScale.x < 0))
+        {
+            flip();
+        }
+    }
+
+    bool IsPlayerInCorrectDirection()
+    {
+        if ((player.position.x < transform.position.x && transform.localScale.x < 0) ||
+            (player.position.x > transform.position.x && transform.localScale.x > 0))
+        {
+            return true;
+        }
+        return false;
     }
 
     private IEnumerator WaitAtPoint()
@@ -78,9 +101,18 @@ public class EnemyPatrol : MonoBehaviour
 
         yield return new WaitForSeconds(2f);
 
-        flip();
+        // Berpindah ke point berikutnya dalam array
+        currentPointIndex = (currentPointIndex + 1) % patrolPoints.Length;
+
+        // Cek arah untuk memastikan menghadap ke target point yang benar
+        Transform targetPoint = patrolPoints[currentPointIndex];
+        if ((targetPoint.position.x < transform.position.x && transform.localScale.x > 0) ||
+            (targetPoint.position.x > transform.position.x && transform.localScale.x < 0))
+        {
+            flip();
+        }
+
         anim.SetBool("isRunning", true);
-        currentPoint = currentPoint == PointB.transform ? PointA.transform : PointB.transform;
         isWaiting = false;
     }
 
@@ -93,14 +125,19 @@ public class EnemyPatrol : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        if (PointA != null && PointB != null)
+        // Menampilkan semua titik patrol di editor
+        Gizmos.color = Color.blue;
+        for (int i = 0; i < patrolPoints.Length; i++)
         {
-            Gizmos.DrawWireSphere(PointA.transform.position, 0.5f);
-            Gizmos.DrawWireSphere(PointB.transform.position, 0.5f);
-            Gizmos.DrawLine(PointA.transform.position, PointB.transform.position);
+            if (patrolPoints[i] != null)
+            {
+                Gizmos.DrawWireSphere(patrolPoints[i].position, 0.5f);
+                if (i < patrolPoints.Length - 1)
+                {
+                    Gizmos.DrawLine(patrolPoints[i].position, patrolPoints[i + 1].position);
+                }
+            }
         }
-
-        // Gizmo untuk melihat chase range
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, chaseRange);
     }
