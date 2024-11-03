@@ -6,6 +6,7 @@ public class EnemyWeaponController : MonoBehaviour
     public Animator animator;  // Drag Animator component here in the Inspector
     public float attackRange = 1f; // Jarak serangan
     public LayerMask playerLayer;   // Layer untuk player
+    public int damageAmount = 20; // Jumlah damage yang diberikan
 
     void Start()
     {
@@ -14,7 +15,6 @@ public class EnemyWeaponController : MonoBehaviour
 
     void Update()
     {
-        // Cek apakah player berada dalam jangkauan serangan
         if (IsPlayerInRange())
         {
             Attack();
@@ -23,21 +23,26 @@ public class EnemyWeaponController : MonoBehaviour
 
     void Attack()
     {
-        // Trigger animasi serangan
         animator.SetTrigger("AttackTrigger");
-        // Logika untuk memberikan damage pada player bisa ditambahkan di sini
-        Debug.Log("Enemy attacks with weapon!");
+        Collider2D playerCollider = Physics2D.OverlapCircle(transform.position, attackRange, playerLayer);
+
+        if (playerCollider != null)
+        {
+            PlayerHealth playerHealth = playerCollider.GetComponent<PlayerHealth>();
+            if (playerHealth != null)
+            {
+                playerHealth.TakeDamage(damageAmount);
+            }
+        }
     }
 
     private bool IsPlayerInRange()
     {
-        // Ganti dengan posisi dan ukuran collider sesuai dengan kebutuhan
         return Physics2D.OverlapCircle(transform.position, attackRange, playerLayer);
     }
 
     private void OnDrawGizmosSelected()
     {
-        // Untuk visualisasi jangkauan serangan di scene view
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, attackRange);
     }
