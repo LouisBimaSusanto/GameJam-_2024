@@ -4,11 +4,10 @@ using UnityEngine;
 
 public class EnemyPatrol : MonoBehaviour
 {
-    public GameObject PointA;
-    public GameObject PointB;
+    public Transform[] patrolPoints; // Array untuk point yang bisa dibagikan
+    private int currentPointIndex = 0; // Index untuk point saat ini
     private Rigidbody2D rb;
     private Animator anim;
-    private Transform currentPoint;
     public float speed;
     public float chaseSpeed;
     private bool isWaiting = false;
@@ -21,7 +20,6 @@ public class EnemyPatrol : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
-        currentPoint = PointB.transform;
         anim.SetBool("isRunning", true);
     }
 
@@ -52,18 +50,19 @@ public class EnemyPatrol : MonoBehaviour
     void Patrol()
     {
         // Tentukan arah ke target patrol dan cek apakah perlu flip
-        if ((currentPoint.position.x < transform.position.x && transform.localScale.x > 0) ||
-            (currentPoint.position.x > transform.position.x && transform.localScale.x < 0))
+        Transform targetPoint = patrolPoints[currentPointIndex];
+        if ((targetPoint.position.x < transform.position.x && transform.localScale.x > 0) ||
+            (targetPoint.position.x > transform.position.x && transform.localScale.x < 0))
         {
             flip();
         }
 
-        Vector2 direction = (currentPoint.position - transform.position).normalized;
+        Vector2 direction = (targetPoint.position - transform.position).normalized;
         rb.velocity = new Vector2(direction.x * speed, rb.velocity.y);
 
         anim.SetBool("isRunning", rb.velocity.magnitude > 0.1f);
 
-        if (Vector2.Distance(transform.position, currentPoint.position) < 0.5f)
+        if (Vector2.Distance(transform.position, targetPoint.position) < 0.5f)
         {
             StartCoroutine(WaitAtPoint());
         }
@@ -84,7 +83,6 @@ public class EnemyPatrol : MonoBehaviour
         }
     }
 
-    // Fungsi untuk mengecek apakah player berada di arah yang sesuai dengan pandangan enemy
     bool IsPlayerInCorrectDirection()
     {
         if ((player.position.x < transform.position.x && transform.localScale.x < 0) ||
@@ -103,12 +101,13 @@ public class EnemyPatrol : MonoBehaviour
 
         yield return new WaitForSeconds(2f);
 
-        // Setelah selesai menunggu, tentukan target point yang baru
-        currentPoint = currentPoint == PointB.transform ? PointA.transform : PointB.transform;
+        // Berpindah ke point berikutnya dalam array
+        currentPointIndex = (currentPointIndex + 1) % patrolPoints.Length;
 
         // Cek arah untuk memastikan menghadap ke target point yang benar
-        if ((currentPoint.position.x < transform.position.x && transform.localScale.x > 0) ||
-            (currentPoint.position.x > transform.position.x && transform.localScale.x < 0))
+        Transform targetPoint = patrolPoints[currentPointIndex];
+        if ((targetPoint.position.x < transform.position.x && transform.localScale.x > 0) ||
+            (targetPoint.position.x > transform.position.x && transform.localScale.x < 0))
         {
             flip();
         }
@@ -126,13 +125,19 @@ public class EnemyPatrol : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        if (PointA != null && PointB != null)
+        // Menampilkan semua titik patrol di editor
+        Gizmos.color = Color.blue;
+        for (int i = 0; i < patrolPoints.Length; i++)
         {
-            Gizmos.DrawWireSphere(PointA.transform.position, 0.5f);
-            Gizmos.DrawWireSphere(PointB.transform.position, 0.5f);
-            Gizmos.DrawLine(PointA.transform.position, PointB.transform.position);
+            if (patrolPoints[i] != null)
+            {
+                Gizmos.DrawWireSphere(patrolPoints[i].position, 0.5f);
+                if (i < patrolPoints.Length - 1)
+                {
+                    Gizmos.DrawLine(patrolPoints[i].position, patrolPoints[i + 1].position);
+                }
+            }
         }
-
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, chaseRange);
     }
