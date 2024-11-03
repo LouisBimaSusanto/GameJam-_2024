@@ -7,6 +7,11 @@ public class AttackHitBox : MonoBehaviour
     public int damage = 10;
     private QTEManager qteManager;
 
+    void Start()
+    {
+        qteManager = FindObjectOfType<QTEManager>(); // Or assign it directly in the Inspector
+    }
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.CompareTag("Enemy"))
