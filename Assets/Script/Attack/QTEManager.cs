@@ -2,96 +2,114 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class QTEManager : MonoBehaviour
 {
-    public GameObject qtePanel;
-    public RectTransform needle;
-    public RectTransform hitArea;
-    public float qteDuration = 2f;
-    public float needleSpeed = 200f;
+    public Transform pointA;
+    public Transform pointB; 
+    public Transform safeZone; 
+    public float moveSpeed = 100f; 
+    public GameObject qtePanel; // QTE UI Panel to show/hide
+    public Transform pointer; 
 
+    private Vector3 targetPosition;
+    private EnemyHealth enemyHealth; 
     private bool qteActive = false;
-    private bool success = false;
-    private float originalNeedleX;
-    private EnemyHealth enemyHealth;
 
-    // Start is called before the first frame update
     void Start()
     {
-        qtePanel.SetActive(false);
-        originalNeedleX = needle.anchoredPosition.x;
+        if (pointer == null)
+        {
+            Debug.LogError("Pointer not assigned. Please assign a pointer GameObject in the Inspector.");
+            return;
+        }
+
+        targetPosition = pointB.position; 
+        pointer.position = pointA.position;
+        qtePanel.SetActive(false); // Hide QTE panel initially
     }
 
-    public void StartQTE(EnemyHealth enemyHealthToDamage)
+    public void StartQTE(EnemyHealth targetEnemy)
     {
-        enemyHealth = enemyHealthToDamage;
-        success = false;
+        enemyHealth = targetEnemy; // Set enemy for QTE
         qteActive = true;
-        needle.anchoredPosition = new Vector2(originalNeedleX, needle.anchoredPosition.y); // Reset posisi jarum
-        qtePanel.SetActive(true);
-        StartCoroutine(QTECoroutine());
+        qtePanel.SetActive(true); // Show QTE panel
+        pointer.position = pointA.position;
+        targetPosition = pointB.position; 
     }
 
-    private IEnumerator QTECoroutine()
+    void Update()
     {
-        float timer = 0f;
+        if (!qteActive || pointer == null) return;
 
-        while (timer < qteDuration)
+        pointer.position = Vector3.MoveTowards(pointer.position, targetPosition, moveSpeed * Time.deltaTime);
+
+        if (Vector3.Distance(pointer.position, pointA.position) < 0.1f)
         {
-            if (!success && qteActive)
+            targetPosition = pointB.position;
+        }
+        else if (Vector3.Distance(pointer.position, pointB.position) < 0.1f)
+        {
+            targetPosition = pointA.position;
+        }
+
+        // Spacebar press to check success
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            CheckSuccess();
+        }
+    }
+
+    void CheckSuccess()
+    {
+        // Ensure the pointer and safe zone are both RectTransforms for accurate UI checking
+        RectTransform pointerRect = pointer.GetComponent<RectTransform>();
+        RectTransform safeZoneRect = safeZone.GetComponent<RectTransform>();
+
+        if (pointerRect != null && safeZoneRect != null)
+        {
+            if (RectTransformUtility.RectangleContainsScreenPoint(safeZoneRect, pointerRect.position, null))
             {
-                needle.anchoredPosition += Vector2.right * needleSpeed * Time.deltaTime;
-
-                if (needle.anchoredPosition.x > qtePanel.GetComponent<RectTransform>().rect.width)
-                {
-                    needle.anchoredPosition = new Vector2(originalNeedleX, needle.anchoredPosition.y);
-                }
-
-                if (Input.GetKeyDown(KeyCode.Space))
-                {
-                    if (IsNeedleInHitArea())
-                    {
-                        success = true;
-                        qtePanel.SetActive(false); // Nonaktifkan QTE UI
-                        ExecuteQTE(); // Eksekusi QTE
-                    }
-                    else
-                    {
-                        GameOver(); // Jika gagal
-                    }
-                }
+                Debug.Log("Success!");
+                ExecuteQTE();
             }
-            timer += Time.deltaTime;
-            yield return null;
+            else
+            {
+                Debug.Log("Fail!");
+                GameOver();
+            }
         }
-
-        if (!success)
+        else
         {
-            GameOver();
+            if (Vector3.Distance(pointer.position, safeZone.position) < 0.5f) 
+            {
+                Debug.Log("Success!");
+                ExecuteQTE();
+            }
+            else
+            {
+                Debug.Log("Fail!");
+                GameOver();
+            }
         }
+
+        qteActive = false;
+        qtePanel.SetActive(false);
     }
 
-    private bool IsNeedleInHitArea()
+    void ExecuteQTE()
     {
-        float needleX = needle.anchoredPosition.x;
-        float hitAreaMinX = hitArea.anchoredPosition.x - (hitArea.rect.width / 2);
-        float hitAreaMaxX = hitArea.anchoredPosition.x + (hitArea.rect.width / 2);
-
-        return needleX >= hitAreaMinX && needleX <= hitAreaMaxX;
-    }
-
-    private void ExecuteQTE()
-    {
-        if (enemyHealth !=null)
+        if (enemyHealth != null)
         {
             enemyHealth.TakeDamage(100);
-            Debug.Log("QTE don");
+            Debug.Log("Enemy damaged!");
         }
     }
 
-    private void GameOver() 
+    void GameOver()
     {
-        Debug.Log("Cupu");
+        Debug.Log("Game Over! Failed QTE.");
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }
