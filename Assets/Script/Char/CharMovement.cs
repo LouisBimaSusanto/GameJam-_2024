@@ -41,7 +41,7 @@ public class CharMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
-        rb.velocity = new Vector2(movement * moveSpeed, rb.velocity.y);
+        rb.linearVelocity = new Vector2(movement * moveSpeed, rb.linearVelocity.y);
     }
 
     private void OnCollisionEnter2D(Collision2D collision)

@@ -58,9 +58,9 @@ public class EnemyPatrol : MonoBehaviour
         }
 
         Vector2 direction = (targetPoint.position - transform.position).normalized;
-        rb.velocity = new Vector2(direction.x * speed, rb.velocity.y);
+        rb.linearVelocity = new Vector2(direction.x * speed, rb.linearVelocity.y);
 
-        anim.SetBool("isRunning", rb.velocity.magnitude > 0.1f);
+        anim.SetBool("isRunning", rb.linearVelocity.magnitude > 0.1f);
 
         if (Vector2.Distance(transform.position, targetPoint.position) < 0.5f)
         {
@@ -71,7 +71,7 @@ public class EnemyPatrol : MonoBehaviour
     void ChasePlayer()
     {
         Vector2 direction = (player.position - transform.position).normalized;
-        rb.velocity = new Vector2(direction.x * chaseSpeed, rb.velocity.y);
+        rb.linearVelocity = new Vector2(direction.x * chaseSpeed, rb.linearVelocity.y);
 
         anim.SetBool("isRunning", true);
 
@@ -96,7 +96,7 @@ public class EnemyPatrol : MonoBehaviour
     private IEnumerator WaitAtPoint()
     {
         isWaiting = true;
-        rb.velocity = Vector2.zero;
+        rb.linearVelocity = Vector2.zero;
         anim.SetBool("isRunning", false);
 
         yield return new WaitForSeconds(2f);
